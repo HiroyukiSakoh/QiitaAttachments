@@ -1,0 +1,104 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "DnsZoneName": {
+            "type": "string"
+        },
+        "CNAME": {
+            "type": "array"
+        },
+        "SRV": {
+            "type": "array"
+        },
+        "TXT": {
+            "type": "array"
+        },
+        "MX": {
+            "type": "array"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/dnszones",
+            "name": "[parameters('DnsZoneName')]",
+            "apiVersion": "2017-10-01",
+            "location": "global"
+        },
+        {
+            "type": "Microsoft.Network/dnszones/CNAME",
+            "name": "[concat(parameters('DnsZoneName'), '/', parameters('CNAME')[copyIndex()].name)]",
+            "apiVersion": "2017-10-01",
+            "properties": {
+                "TTL": "[parameters('CNAME')[copyIndex()].ttl]",
+                "CNAMERecord": {
+                    "cname": "[parameters('CNAME')[copyIndex()].record]"
+                }
+            },
+            "copy": {
+                "count": "[length(parameters('CNAME'))]",
+                "name": "cname-loop"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('DnsZoneName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/dnszones/SRV",
+            "name": "[concat(parameters('DnsZoneName'), '/', parameters('SRV')[copyIndex()].name)]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": "[parameters('SRV')[copyIndex()].ttl]",
+                "SRVRecords": "[parameters('SRV')[copyIndex()].records]"
+            },
+            "copy": {
+                "count": "[length(parameters('SRV'))]",
+                "name": "srv-loop"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('DnsZoneName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/dnszones/TXT",
+            "name": "[concat(parameters('DnsZoneName'), '/', parameters('TXT')[copyIndex()].name)]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": "[parameters('TXT')[copyIndex()].ttl]",
+                "TXTRecords": [
+                    {
+                        "value": [
+                            "[parameters('TXT')[copyIndex()].records]"
+                        ]
+                    }
+                ]
+            },
+            "copy": {
+                "count": "[length(parameters('TXT'))]",
+                "name": "txt-loop"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('DnsZoneName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/dnszones/MX",
+            "name": "[concat(parameters('DnsZoneName'), '/', parameters('MX')[copyIndex()].name)]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": "[parameters('MX')[copyIndex()].ttl]",
+                "MXRecords": "[parameters('MX')[copyIndex()].records]"
+            },
+            "copy": {
+                "count": "[length(parameters('MX'))]",
+                "name": "mx-loop"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('DnsZoneName'))]"
+            ]
+        }
+    ]
+}

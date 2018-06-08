@@ -1,0 +1,248 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dnszones_sakoh.example_name": {
+            "defaultValue": "sakoh.example",
+            "type": "String"
+        },
+        "MX_@_name": {
+            "defaultValue": "@",
+            "type": "String"
+        },
+        "NS_@_name": {
+            "defaultValue": "@",
+            "type": "String"
+        },
+        "SOA_@_name": {
+            "defaultValue": "@",
+            "type": "String"
+        },
+        "TXT_@_name": {
+            "defaultValue": "@",
+            "type": "String"
+        },
+        "CNAME_sip_name": {
+            "defaultValue": "sip",
+            "type": "String"
+        },
+        "SRV__sip._tls_name": {
+            "defaultValue": "_sip._tls",
+            "type": "String"
+        },
+        "CNAME_autodiscover_name": {
+            "defaultValue": "autodiscover",
+            "type": "String"
+        },
+        "CNAME_lyncdiscover_name": {
+            "defaultValue": "lyncdiscover",
+            "type": "String"
+        },
+        "SRV__sipfederationtls._tcp_name": {
+            "defaultValue": "_sipfederationtls._tcp",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example' から一般化されました。",
+            "type": "Microsoft.Network/dnszones",
+            "name": "[parameters('dnszones_sakoh.example_name')]",
+            "apiVersion": "2017-10-01",
+            "location": "global",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "maxNumberOfRecordSets": 5000,
+                "nameServers": [
+                    "ns1-04.azure-dns.com.",
+                    "ns2-04.azure-dns.net.",
+                    "ns3-04.azure-dns.org.",
+                    "ns4-04.azure-dns.info."
+                ],
+                "numberOfRecordSets": 9,
+                "zoneType": "Public"
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/CNAME/autodiscover' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/CNAME",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('CNAME_autodiscover_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "CNAMERecord": {
+                    "cname": "[concat(parameters('CNAME_autodiscover_name'),'.outlook.com')]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/CNAME/lyncdiscover' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/CNAME",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('CNAME_lyncdiscover_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "CNAMERecord": {
+                    "cname": "webdir.online.lync.com"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/CNAME/sip' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/CNAME",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('CNAME_sip_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "CNAMERecord": {
+                    "cname": "[concat(parameters('CNAME_sip_name'),'dir.online.lync.com')]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/MX/@' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/MX",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('MX_@_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "MXRecords": [
+                    {
+                        "exchange": "sakoh-example.mail.protection.outlook.com",
+                        "preference": 0
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/NS/@' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/NS",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('NS_@_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 172800,
+                "NSRecords": [
+                    {
+                        "nsdname": "ns1-04.azure-dns.com."
+                    },
+                    {
+                        "nsdname": "ns2-04.azure-dns.net."
+                    },
+                    {
+                        "nsdname": "ns3-04.azure-dns.org."
+                    },
+                    {
+                        "nsdname": "ns4-04.azure-dns.info."
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/SOA/@' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/SOA",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('SOA_@_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "SOARecord": {
+                    "email": "azuredns-hostmaster.microsoft.com",
+                    "expireTime": 2419200,
+                    "host": "ns1-04.azure-dns.com.",
+                    "minimumTTL": 300,
+                    "refreshTime": 3600,
+                    "retryTime": 300,
+                    "serialNumber": 1
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/SRV/_sipfederationtls._tcp' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/SRV",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('SRV__sipfederationtls._tcp_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "SRVRecords": [
+                    {
+                        "port": 5061,
+                        "priority": 100,
+                        "target": "sipfed.online.lync.com",
+                        "weight": 1
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/SRV/_sip._tls' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/SRV",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('SRV__sip._tls_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "SRVRecords": [
+                    {
+                        "port": 443,
+                        "priority": 100,
+                        "target": "sipdir.online.lync.com",
+                        "weight": 1
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        },
+        {
+            "comments": "リソース '/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/dns/providers/Microsoft.Network/dnszones/sakoh.example/TXT/@' から一般化されました。",
+            "type": "Microsoft.Network/dnszones/TXT",
+            "name": "[concat(parameters('dnszones_sakoh.example_name'), '/', parameters('TXT_@_name'))]",
+            "apiVersion": "2017-10-01",
+            "scale": null,
+            "properties": {
+                "TTL": 3600,
+                "TXTRecords": [
+                    {
+                        "value": [
+                            "v=spf1 include:spf.protection.outlook.com -all"
+                        ]
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/dnszones', parameters('dnszones_sakoh.example_name'))]"
+            ]
+        }
+    ]
+}

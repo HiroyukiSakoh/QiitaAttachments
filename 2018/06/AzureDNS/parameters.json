@@ -1,0 +1,79 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "DnsZoneName": {
+            "value": "sakoh2.example"
+        },
+        "CNAME": {
+            "value": [
+                {
+                    "name": "autodiscover",
+                    "record": "autodiscover.outlook.com",
+                    "ttl": 3600
+                },
+                {
+                    "name": "lyncdiscover",
+                    "record": "webdir.online.lync.com",
+                    "ttl": 3600
+                },
+                {
+                    "name": "sip",
+                    "record": "sipdir.online.lync.com",
+                    "ttl": 3600
+                }
+            ]
+        },
+        "SRV": {
+            "value": [
+                {
+                    "name": "_sip._tls",
+                    "ttl": 3600,
+                    "records": [
+                        {
+                            "port": 443,
+                            "priority": 100,
+                            "target": "sipdir.online.lync.com",
+                            "weight": 1
+                        }
+                    ]
+                },
+                {
+                    "name": "_sipfederationtls._tcp",
+                    "ttl": 3600,
+                    "records": [
+                        {
+                            "port": 5061,
+                            "priority": 100,
+                            "target": "sipfed.online.lync.com",
+                            "weight": 1
+                        }
+                    ]
+                }
+            ]
+        },
+        "TXT": {
+            "value": [
+                {
+                    "name": "@",
+                    "ttl": 3600,
+                    "records": "v=spf1 include:spf.protection.outlook.com -all"
+                }
+            ]
+        },
+        "MX": {
+            "value": [
+                {
+                    "name": "@",
+                    "ttl": 3600,
+                    "records": [
+                        {
+                            "exchange": "sakoh2-example.mail.protection.outlook.com",
+                            "preference": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
