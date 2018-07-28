@@ -1,0 +1,87 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnet_name": {
+      "value": ""
+    },
+    "vnet_addressPrefix": {
+      "value": "10.0.0.0/16"
+    },
+    "vnet_appgw_subnetName": {
+      "value": "subnet_appgw"
+    },
+    "vnet_appgw_subnetAddressPrefix": {
+      "value": "10.0.0.0/24"
+    },
+    "vnet_apim_subnetName": {
+      "value": "subnet_apim"
+    },
+    "vnet_apim_subnetAddressPrefix": {
+      "value": "10.0.1.0/24"
+    },
+    "publicIpAddress_Name": {
+      "value": ""
+    },
+    "publicIpAddress_DomainNameLabel": {
+      "value": ""
+    },
+    "applicationGateway_Name": {
+      "value": ""
+    },
+    "applicationGateway_skuSize": {
+      "value": "WAF_Medium"
+    },
+    "applicationGateway_tier": {
+      "value": "WAF"
+    },
+    "applicationGateway_capacity": {
+      "value": 2
+    },
+    "applicationGateway_BackendAddress": {
+      "value": "10.0.1.5"
+    },
+    "applicationGateway_enableHttp2": {
+      "value": true
+    },
+    "applicationGateway_API_HostName": {
+      "value":"api.example.com"
+    },
+    "applicationGateway_API_CertPFX": {
+      "value":""
+    },
+    "applicationGateway_API_CertPassword": {
+      "value":""
+    },
+    "applicationGateway_API_CertCER": {
+      "value":""
+    },
+    "applicationGateway_Portal_HostName": {
+      "value":"portal.example.com"
+    },
+    "applicationGateway_Portal_CertPFX":{
+      "value":""
+    },
+    "applicationGateway_Portal_CertPassword":{
+      "value":""
+    },
+    "applicationGateway_Portal_CertCER":{
+      "value":""
+    },
+    "APIManagement_name": {
+      "value": ""
+    },
+    "APIManagement_adminEmail": {
+      "value": ""
+    },
+    "APIManagement_orgName": {
+      "value": ""
+    },
+    "APIManagement_SKU": {
+      "value": "Developer"
+    },
+    "APIManagement_UNIT": {
+      "value": 1
+    }
+  }
+}

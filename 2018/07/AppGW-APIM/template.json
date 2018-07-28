@@ -1,0 +1,412 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnet_name": {
+      "type": "String"
+    },
+    "vnet_addressPrefix": {
+      "type": "String"
+    },
+    "vnet_appgw_subnetName": {
+      "type": "String"
+    },
+    "vnet_appgw_subnetAddressPrefix": {
+      "type": "String"
+    },
+    "vnet_apim_subnetName": {
+      "type": "String"
+    },
+    "vnet_apim_subnetAddressPrefix": {
+      "type": "String"
+    },
+    "publicIpAddress_Name": {
+      "type": "String"
+    },
+    "publicIpAddress_DomainNameLabel": {
+      "type": "String"
+    },
+    "applicationGateway_Name": {
+      "type": "String"
+    },
+    "applicationGateway_skuSize": {
+      "type": "String"
+    },
+    "applicationGateway_tier": {
+      "type": "String"
+    },
+    "applicationGateway_capacity": {
+      "type": "Int"
+    },
+    "applicationGateway_BackendAddress": {
+      "type": "String"
+    },
+    "applicationGateway_enableHttp2": {
+      "type": "Bool"
+    },
+    "applicationGateway_API_HostName": {
+      "type": "string"
+    },
+    "applicationGateway_API_CertPFX": {
+      "type": "string",
+      "metadata": {
+        "description": "Base-64 encoded form of the .pfx file"
+      }
+    },
+    "applicationGateway_API_CertPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for .pfx certificate"
+      }
+    },
+    "applicationGateway_API_CertCER": {
+      "type": "string",
+      "metadata": {
+        "description": "Base-64 encoded form of the .cer file"
+      }
+    },
+    "applicationGateway_Portal_HostName": {
+      "type": "string"
+    },
+    "applicationGateway_Portal_CertPFX": {
+      "type": "string",
+      "metadata": {
+        "description": "Base-64 encoded form of the .pfx file"
+      }
+    },
+    "applicationGateway_Portal_CertPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for .pfx certificate"
+      }
+    },
+    "applicationGateway_Portal_CertCER": {
+      "type": "string",
+      "metadata": {
+        "description": "Base-64 encoded form of the .cer file"
+      }
+    },
+    "APIManagement_name": {
+      "type": "String"
+    },
+    "APIManagement_adminEmail": {
+      "type": "String"
+    },
+    "APIManagement_orgName": {
+      "type": "String"
+    },
+    "APIManagement_SKU": {
+      "type": "String"
+    },
+    "APIManagement_UNIT": {
+      "type": "Int"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('vnet_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnet_addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('vnet_appgw_subnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('vnet_appgw_subnetAddressPrefix')]"
+            }
+          },
+          {
+            "name": "[parameters('vnet_apim_subnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('vnet_apim_subnetAddressPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "sku": {
+        "name": "Basic"
+      },
+      "name": "[parameters('publicIpAddress_Name')]",
+      "apiVersion": "2017-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4,
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('publicIpAddress_DomainNameLabel')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "name": "[parameters('applicationGateway_Name')]",
+      "apiVersion": "2017-10-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('applicationGateway_skuSize')]",
+          "tier": "[parameters('applicationGateway_tier')]",
+          "capacity": "[parameters('applicationGateway_capacity')]"
+        },
+        "gatewayIPConfigurations": [
+          {
+            "name": "IpConfig",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',parameters('vnet_name'),parameters('vnet_appgw_subnetName'))]"
+              }
+            }
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "FrontendIP",
+            "properties": {
+              "PublicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('publicIpAddress_Name'))]"
+              }
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "FrontendPort",
+            "properties": {
+              "Port": 443
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "BackendPoolAPIM",
+            "properties": {
+              "BackendAddresses": [
+                {
+                  "ipAddress": "[parameters('applicationGateway_BackendAddress')]"
+                }
+              ]
+            }
+          }
+        ],
+        "backendHttpSettingsCollection": [
+          {
+            "name": "BackendHttpSettingsAPI",
+            "properties": {
+              "Port": 443,
+              "Protocol": "Https",
+              "CookieBasedAffinity": "Disabled",
+              "hostName": "[parameters('applicationGateway_API_HostName')]",
+              "requestTimeout": 180,
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/probes/apimproxyprobe')]"
+              },
+              "authenticationCertificates": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/authenticationCertificates/backend_apim_cert_API')]"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BackendHttpSettingsPortal",
+            "properties": {
+              "Port": 443,
+              "Protocol": "Https",
+              "CookieBasedAffinity": "Disabled",
+              "hostName": "[parameters('applicationGateway_Portal_HostName')]",
+              "requestTimeout": 180,
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/probes/apimproxyprobe')]"
+              },
+              "authenticationCertificates": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/authenticationCertificates/backend_apim_cert_Portal')]"
+                },
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/authenticationCertificates/backend_apim_cert_API')]"
+                }
+              ]
+            }
+          }
+        ],
+        "httpListeners": [
+          {
+            "name": "HttpListenerAPI",
+            "properties": {
+              "FrontendIPConfiguration": {
+                "Id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/frontendIPConfigurations/FrontendIP')]"
+              },
+              "FrontendPort": {
+                "Id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/frontendPorts/FrontendPort')]"
+              },
+              "Protocol": "Https",
+              "SslCertificate": {
+                "Id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/sslCertificates/front_apim_cert_API')]"
+              },
+              "HostName": "[parameters('applicationGateway_API_HostName')]",
+              "requireServerNameIndication": true
+            }
+          },
+          {
+            "name": "HttpListenerPortal",
+            "properties": {
+              "FrontendIPConfiguration": {
+                "Id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/frontendIPConfigurations/FrontendIP')]"
+              },
+              "FrontendPort": {
+                "Id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/frontendPorts/FrontendPort')]"
+              },
+              "Protocol": "Https",
+              "SslCertificate": {
+                "Id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/sslCertificates/front_apim_cert_Portal')]"
+              },
+              "HostName": "[parameters('applicationGateway_Portal_HostName')]",
+              "requireServerNameIndication": true
+            }
+          }
+        ],
+        "requestRoutingRules": [
+          {
+            "Name": "RuleAPI",
+            "properties": {
+              "RuleType": "Basic",
+              "httpListener": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/httpListeners/HttpListenerAPI')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/backendAddressPools/BackendPoolAPIM')]"
+              },
+              "backendHttpSettings": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/backendHttpSettingsCollection/BackendHttpSettingsAPI')]"
+              }
+            }
+          },
+          {
+            "Name": "RulePortal",
+            "properties": {
+              "RuleType": "Basic",
+              "httpListener": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/httpListeners/HttpListenerPortal')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/backendAddressPools/BackendPoolAPIM')]"
+              },
+              "backendHttpSettings": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateway_Name')), '/backendHttpSettingsCollection/BackendHttpSettingsPortal')]"
+              }
+            }
+          }
+        ],
+        "enableHttp2": "[parameters('applicationGateway_enableHttp2')]",
+        "sslCertificates": [
+          {
+            "name": "front_apim_cert_API",
+            "properties": {
+              "data": "[parameters('applicationGateway_API_CertPFX')]",
+              "password": "[parameters('applicationGateway_API_CertPassword')]"
+            }
+          },
+          {
+            "name": "front_apim_cert_Portal",
+            "properties": {
+              "data": "[parameters('applicationGateway_Portal_CertPFX')]",
+              "password": "[parameters('applicationGateway_Portal_CertPassword')]"
+            }
+          }
+        ],
+        "authenticationCertificates": [
+          {
+            "name": "backend_apim_cert_API",
+            "properties": {
+              "data": "[parameters('applicationGateway_API_CertCER')]"
+            }
+          },
+          {
+            "name": "backend_apim_cert_Portal",
+            "properties": {
+              "data": "[parameters('applicationGateway_Portal_CertCER')]"
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "apimproxyprobe",
+            "properties": {
+              "protocol": "Https",
+              "host": "[parameters('applicationGateway_API_HostName')]",
+              "path": "/status-0123456789abcdef",
+              "interval": 30,
+              "timeout": 120,
+              "unhealthyThreshold": 8,
+              "pickHostNameFromBackendHttpSettings": false,
+              "minServers": 0,
+              "match": {
+                "body": "",
+                "statusCodes": [
+                  "200-399"
+                ]
+              }
+            }
+          }
+        ],
+        "webApplicationFirewallConfiguration": {
+          "enabled": true,
+          "firewallMode": "Detection",
+          "ruleSetType": "OWASP",
+          "ruleSetVersion": "3.0"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', parameters('publicIpAddress_Name'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnet_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "sku": {
+        "name": "[parameters('APIManagement_SKU')]",
+        "capacity": "[parameters('APIManagement_UNIT')]"
+      },
+      "name": "[parameters('APIManagement_name')]",
+      "apiVersion": "2018-01-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publisherEmail": "[parameters('APIManagement_adminEmail')]",
+        "publisherName": "[parameters('APIManagement_orgName')]",
+        "virtualNetworkConfiguration": {
+          "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('vnet_apim_subnetName'))]"
+        },
+        "hostnameConfigurations": [
+          {
+            "type": "Proxy",
+            "hostName": "[parameters('applicationGateway_API_HostName')]",
+            "encodedCertificate": "[parameters('applicationGateway_API_CertPFX')]",
+            "certificatePassword": "[parameters('applicationGateway_API_CertPassword')]",
+            "negotiateClientCertificate": false
+          },
+          {
+            "type": "Portal",
+            "hostName": "[parameters('applicationGateway_Portal_HostName')]",
+            "encodedCertificate": "[parameters('applicationGateway_Portal_CertPFX')]",
+            "certificatePassword": "[parameters('applicationGateway_Portal_CertPassword')]",
+            "negotiateClientCertificate": false
+          }
+        ],
+        "virtualNetworkType": "Internal"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnet_name'))]"
+      ]
+    }
+  ],
+  "variables": {}
+}
