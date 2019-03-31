@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "LogAnalyticsWorkspacesName": {
+      "value": "qiita201903-dev-je-loganalytics"
+    },
+    "LogAnalyticsWorkspacesSku": {
+      "value": "pergb2018"
+    },
+    "ActionGroups": {
+      "value": [
+        {
+          "Name": "dev-je-actiongroup1",
+          "ShortName": "actiongroup1",
+          "EmailAddress": "alert@example.com"
+        }
+      ]
+    },
+    "MicrosoftInsightsComponentsName": {
+      "value": "qiita201903-dev-je-applicationinsights"
+    },
+    "MicrosoftInsightsComponentsType": {
+      "value": "web"
+    }
+  }
+}

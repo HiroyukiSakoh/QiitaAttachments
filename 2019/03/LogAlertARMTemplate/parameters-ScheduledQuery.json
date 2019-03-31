@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ScheduledQueryRules":{
+      "value": [
+        {
+          "Name": "qiita201903-dev-je-waf-alert",
+          "Description": "WAFアラート(ScheduledQuery)",
+          "Source":{
+            "Query": "AzureDiagnostics | where ResourceProvider == 'MICROSOFT.NETWORK' and ResourceType == 'APPLICATIONGATEWAYS' and Category == 'ApplicationGatewayFirewallLog'",
+            "ResorceGroup":"qiita201903-dev-je",
+            "ResorceProvider":"Microsoft.OperationalInsights/workspaces",
+            "ResorceName":"qiita201903-dev-je-loganalytics",
+            "ResorceLocation":"japaneast",
+            "QueryType":"ResultCount"
+          },
+          "Schedule":{
+            "FrequencyInMinutes": 30,
+            "TimeWindowInMinutes": 30
+          },
+          "Action":{
+            "Severity": "3",
+            "ActionGroupName": "dev-je-actiongroup1",
+            "Trigger":{
+              "ThresholdOperator": "GreaterThan",
+              "Threshold": 0
+            }
+          }
+        },
+        {
+          "Name": "qiita201903-dev-je-app-alert",
+          "Description": "アプリアラート",
+          "Source":{
+            "Query":"traces \r\n| where message contains 'ApplicationErrorMessage'",
+            "ResorceGroup":"qiita201903-dev-je",
+            "ResorceProvider":"microsoft.insights/components",
+            "ResorceName":"qiita201903-dev-je-applicationinsights",
+            "ResorceLocation":"japaneast",
+            "QueryType":"ResultCount"
+          },
+          "Schedule":{
+            "FrequencyInMinutes": 30,
+            "TimeWindowInMinutes": 30
+          },
+          "Action":{
+            "Severity": "3",
+            "ActionGroupName": "dev-je-actiongroup1",
+            "Trigger":{
+              "ThresholdOperator": "GreaterThan",
+              "Threshold": 0
+            }
+          }
+        }
+      ]
+    }
+  }
+}

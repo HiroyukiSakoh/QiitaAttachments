@@ -1,0 +1,82 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "LogAnalyticsWorkspacesName": {
+      "type": "String"
+    },
+    "LogAnalyticsWorkspacesSku": {
+      "type": "String"
+    },
+    "ActionGroups": {
+      "type": "array"
+    },
+    "MicrosoftInsightsComponentsName": {
+      "type": "String"
+    },
+    "MicrosoftInsightsComponentsType": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "microsoft.insights/actionGroups",
+      "name": "[parameters('ActionGroups')[copyIndex()].Name]",
+      "apiVersion": "2018-03-01",
+      "location": "Global",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "groupShortName": "[parameters('ActionGroups')[copyIndex()].ShortName]",
+        "enabled": true,
+        "emailReceivers": [
+          {
+            "name": "email",
+            "emailAddress": "[parameters('ActionGroups')[copyIndex()].EmailAddress]"
+          }
+        ],
+        "smsReceivers": [],
+        "webhookReceivers": [],
+        "itsmReceivers": [],
+        "azureAppPushReceivers": [],
+        "automationRunbookReceivers": [],
+        "voiceReceivers": [],
+        "logicAppReceivers": [],
+        "azureFunctionReceivers": []
+      },
+      "copy": {
+        "count": "[length(parameters('ActionGroups'))]",
+        "name": "ActionGroups-loop"
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[parameters('LogAnalyticsWorkspacesName')]",
+      "apiVersion": "2017-03-15-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('LogAnalyticsWorkspacesSku')]"
+        },
+        "features": {
+          "searchVersion": 1
+        }
+      }
+    },
+    {
+      "type": "microsoft.insights/components",
+      "name": "[parameters('MicrosoftInsightsComponentsName')]",
+      "apiVersion": "2014-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ApplicationId": "[parameters('MicrosoftInsightsComponentsName')]",
+        "Application_Type": "[parameters('MicrosoftInsightsComponentsType')]",
+        "Flow_Type": "Redfield",
+        "Request_Source": "ARMTemplate"
+      }
+    }
+  ],
+  "variables": {
+  }
+}

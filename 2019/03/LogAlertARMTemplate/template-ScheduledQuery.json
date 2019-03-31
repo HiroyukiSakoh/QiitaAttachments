@@ -1,0 +1,52 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ScheduledQueryRules": {
+      "type": "array"
+    }
+  },
+  "resources": [
+    {
+      "type":"Microsoft.Insights/scheduledQueryRules",
+      "apiVersion": "2018-04-16",
+      "location": "[parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceLocation]",
+      "name":"[parameters('ScheduledQueryRules')[copyIndex()].Name]",
+      "tags":{
+        "[concat('hidden-link:', subscription().id,'/resourcegroups/', parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceGroup, '/providers/',parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceProvider,'/', parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceName)]": "Resource"
+      },
+      "properties":{
+        "description": "[parameters('ScheduledQueryRules')[copyIndex()].Description]",
+        "enabled": "true",
+        "source": {
+          "query": "[parameters('ScheduledQueryRules')[copyIndex()].Source.Query]",
+          "dataSourceId": "[resourceId(parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceGroup,parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceProvider,parameters('ScheduledQueryRules')[copyIndex()].Source.ResorceName)]",
+          "queryType":"[parameters('ScheduledQueryRules')[copyIndex()].Source.QueryType]"
+        },
+        "schedule":{
+          "frequencyInMinutes": "[parameters('ScheduledQueryRules')[copyIndex()].Schedule.FrequencyInMinutes]",
+          "timeWindowInMinutes": "[parameters('ScheduledQueryRules')[copyIndex()].Schedule.TimeWindowInMinutes]"
+        },
+        "action":{
+          "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction",
+          "severity":"[parameters('ScheduledQueryRules')[copyIndex()].Action.Severity]",
+          "aznsAction":{
+            "actionGroup":"[array(resourceId('microsoft.insights/actionGroups', parameters('ScheduledQueryRules')[copyIndex()].Action.ActionGroupName))]",
+            "emailSubject": null,
+            "customWebhookPayload": null
+          },
+          "trigger":{
+            "thresholdOperator":"[parameters('ScheduledQueryRules')[copyIndex()].Action.Trigger.ThresholdOperator]",
+            "threshold":"[parameters('ScheduledQueryRules')[copyIndex()].Action.Trigger.Threshold]"
+          }
+        }
+      },
+      "copy": {
+        "count": "[length(parameters('ScheduledQueryRules'))]",
+        "name": "ScheduledQueryRules-loop"
+      }
+    }
+  ],
+  "variables": {
+  }
+}

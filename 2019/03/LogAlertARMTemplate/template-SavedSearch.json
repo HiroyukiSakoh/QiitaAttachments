@@ -1,0 +1,119 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "LogAnalytics": {
+      "type": "array"
+    },
+    "AppInsights": {
+      "type": "array"
+    }
+  },
+  "resources": [
+    {
+      "name": "[concat(parameters('LogAnalytics')[copyIndex()].WorkspacesName, '/', parameters('LogAnalytics')[copyIndex()].Name,'-search')]",
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2017-04-26-preview",
+      "properties": {
+        "etag": "*",
+        "Query": "[parameters('LogAnalytics')[copyIndex()].SavedSearch.Query]",
+        "DisplayName": "[parameters('LogAnalytics')[copyIndex()].Name]",
+        "Category": "[parameters('LogAnalytics')[copyIndex()].SavedSearch.Category]",
+        "Version": 2
+      },
+      "copy": {
+        "count": "[length(parameters('LogAnalytics'))]",
+        "name": "SavedSearches-loop"
+      },
+      "dependsOn": [
+      ]
+    },
+    {
+      "name": "[concat(parameters('LogAnalytics')[copyIndex()].WorkspacesName, '/', parameters('LogAnalytics')[copyIndex()].Name,'-search', '/', parameters('LogAnalytics')[copyIndex()].Name, '-schedule')]",
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches/schedules/",
+      "apiVersion": "2017-04-26-preview",
+      "properties": {
+        "etag": "*",
+        "interval": "[parameters('LogAnalytics')[copyIndex()].Schedule.Interval]",
+        "queryTimeSpan": "[parameters('LogAnalytics')[copyIndex()].Schedule.TimeSpan]",
+        "enabled": true
+      },
+      "copy": {
+        "count": "[length(parameters('LogAnalytics'))]",
+        "name": "SavedSearchesSchedules-loop"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.OperationalInsights/workspaces/', parameters('LogAnalytics')[copyIndex()].WorkspacesName, '/savedSearches/', parameters('LogAnalytics')[copyIndex()].Name,'-search')]"
+      ]
+    },
+    {
+      "name": "[concat(parameters('LogAnalytics')[copyIndex()].WorkspacesName, '/',parameters('LogAnalytics')[copyIndex()].Name, '-search', '/', parameters('LogAnalytics')[copyIndex()].Name,  '-schedule', '/',  parameters('LogAnalytics')[copyIndex()].Name,'-alert')]",
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches/schedules/actions",
+      "apiVersion": "2017-04-26-preview",
+      "properties": {
+        "etag": "*",
+        "Type": "Alert",
+        "Name": "[concat(parameters('LogAnalytics')[copyIndex()].Name,'-alert')]",
+        "Description": "[parameters('LogAnalytics')[copyIndex()].Description]",
+        "Severity": "[parameters('LogAnalytics')[copyIndex()].Severity]",
+        "Threshold": {
+          "Operator": "[parameters('LogAnalytics')[copyIndex()].Threshold.Operator]",
+          "Value": "[parameters('LogAnalytics')[copyIndex()].Threshold.Value]"
+        },
+        "AzNsNotification": {
+          "GroupIds": [
+            "[resourceId('microsoft.insights/actionGroups', parameters('LogAnalytics')[copyIndex()].Action.ActionGroupName)]"
+          ]
+        }
+      },
+      "copy": {
+        "count": "[length(parameters('LogAnalytics'))]",
+        "name": "Alerts-loop"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.OperationalInsights/workspaces/', parameters('LogAnalytics')[copyIndex()].WorkspacesName, '/savedSearches/', parameters('LogAnalytics')[copyIndex()].Name, '-search', '/schedules/',parameters('LogAnalytics')[copyIndex()].Name, '-schedule')]"
+      ]
+    },
+    {
+      "type":"Microsoft.Insights/scheduledQueryRules",
+      "apiVersion": "2018-04-16",
+      "location": "[parameters('AppInsights')[copyIndex()].Source.ResorceLocation]",
+      "name":"[parameters('AppInsights')[copyIndex()].Name]",
+      "tags":{
+        "[concat('hidden-link:', subscription().id,'/resourcegroups/', parameters('AppInsights')[copyIndex()].Source.ResorceGroup, '/providers/microsoft.insights/components/', parameters('AppInsights')[copyIndex()].Source.ResorceName)]": "Resource"
+      },
+      "properties":{
+        "description": "[parameters('AppInsights')[copyIndex()].Description]",
+        "enabled": "true",
+        "source": {
+          "query": "[parameters('AppInsights')[copyIndex()].Source.Query]",
+          "dataSourceId": "[concat(subscription().id,'/resourcegroups/', parameters('AppInsights')[copyIndex()].Source.ResorceGroup, '/providers/microsoft.insights/components/', parameters('AppInsights')[copyIndex()].Source.ResorceName)]",
+          "queryType":"[parameters('AppInsights')[copyIndex()].Source.QueryType]"
+        },
+        "schedule":{
+          "frequencyInMinutes": "[parameters('AppInsights')[copyIndex()].Schedule.FrequencyInMinutes]",
+          "timeWindowInMinutes": "[parameters('AppInsights')[copyIndex()].Schedule.TimeWindowInMinutes]"
+        },
+        "action":{
+          "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction",
+          "severity":"[parameters('AppInsights')[copyIndex()].Action.Severity]",
+          "aznsAction":{
+            "actionGroup":"[array(resourceId('microsoft.insights/actionGroups', parameters('AppInsights')[copyIndex()].Action.ActionGroupName))]",
+            "emailSubject": null,
+            "customWebhookPayload": null
+          },
+          "trigger":{
+            "thresholdOperator":"[parameters('AppInsights')[copyIndex()].Action.Trigger.ThresholdOperator]",
+            "threshold":"[parameters('AppInsights')[copyIndex()].Action.Trigger.Threshold]"
+          }
+        }
+      },
+      "copy": {
+        "count": "[length(parameters('AppInsights'))]",
+        "name": "AppInsightsAlert-loop"
+      }
+    }
+  ],
+  "variables": {
+  }
+}

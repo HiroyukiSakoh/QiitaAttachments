@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "LogAnalytics": {
+      "value": [
+        {
+          "WorkspacesName": "qiita201903-dev-je-loganalytics",
+          "Name": "qiita201903-dev-je-waf",
+          "Description": "WAFアラート(SavedSearch)",
+          "Severity": "warning",
+          "SavedSearch":{
+            "Query": "AzureDiagnostics | where ResourceProvider == 'MICROSOFT.NETWORK' and ResourceType == 'APPLICATIONGATEWAYS' and Category == 'ApplicationGatewayFirewallLog'",
+            "Category": "AlertIbiza"
+          },
+          "Schedule":{
+            "Interval": "30",
+            "TimeSpan": "30"
+          },
+          "Threshold":{
+            "Operator": "gt",
+            "Value": 0
+          },
+          "Action":{
+            "ActionGroupName": "dev-je-actiongroup1"
+          }
+        }
+      ]
+    },
+    "AppInsights":{
+      "value": [
+        {
+          "Name": "qiita201903-dev-je-app-alert",
+          "Description": "アプリアラート",
+          "Source":{
+            "Query":"traces \r\n| where message contains 'ApplicationErrorMessage'",
+            "ResorceGroup":"qiita201903-dev-je",
+            "ResorceName":"qiita201903-dev-je-applicationinsights",
+            "ResorceLocation":"japaneast",
+            "QueryType":"ResultCount"
+          },
+          "Schedule":{
+            "FrequencyInMinutes": 30,
+            "TimeWindowInMinutes": 30
+          },
+          "Action":{
+            "Severity": "3",
+            "ActionGroupName": "dev-je-actiongroup1",
+            "Trigger":{
+              "ThresholdOperator": "GreaterThan",
+              "Threshold": 0
+            }
+          }
+        }
+      ]
+    }
+  }
+}
