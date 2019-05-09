@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -7,12 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 
-[assembly: WebJobsStartup(typeof(AzFuncDISample.DocumentClientStartup))]
+[assembly: FunctionsStartup(typeof(AzFuncDISample.DocumentClientStartup))]
 namespace AzFuncDISample
 {
-    public class DocumentClientStartup : IWebJobsStartup
+    public class DocumentClientStartup : FunctionsStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public override void Configure(IFunctionsHostBuilder builder)
         {
             var configuration = builder.Services
                 .Where(s => s.ServiceType == typeof(IConfiguration)).First()

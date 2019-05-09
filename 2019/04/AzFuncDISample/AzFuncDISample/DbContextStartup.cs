@@ -1,16 +1,17 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
-[assembly: WebJobsStartup(typeof(AzFuncDISample.DbContextStartup))]
+[assembly: FunctionsStartup(typeof(AzFuncDISample.DbContextStartup))]
 namespace AzFuncDISample
 {
-    public class DbContextStartup : IWebJobsStartup
+    public class DbContextStartup : FunctionsStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public override void Configure(IFunctionsHostBuilder builder)
         {
             var configuration = builder.Services
                 .Where(s => s.ServiceType == typeof(IConfiguration)).First()

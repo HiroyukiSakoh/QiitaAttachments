@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +11,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 
-[assembly: WebJobsStartup(typeof(AzFuncDISample.HttpClientStartup))]
+[assembly: FunctionsStartup(typeof(AzFuncDISample.HttpClientStartup))]
 namespace AzFuncDISample
 {
-    public class HttpClientStartup : IWebJobsStartup
+    public class HttpClientStartup : FunctionsStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public override void Configure(IFunctionsHostBuilder builder)
         {
             var configuration = builder.Services
                 .Where(s => s.ServiceType == typeof(IConfiguration)).First()
