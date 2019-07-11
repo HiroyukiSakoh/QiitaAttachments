@@ -15,19 +15,21 @@ namespace AzFuncDISample
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var configuration = builder.Services
-                .Where(s => s.ServiceType == typeof(IConfiguration)).First()
-                .ImplementationInstance as IConfiguration;
-            var accountEndpoint = new Uri(configuration.GetValue<string>("Cosmos:AccountEndpoint"));
-            var accountKey = configuration.GetValue<string>("Cosmos:AccountKey");
-            var connectionPolicy = new ConnectionPolicy
-            {
-                ConnectionMode = ConnectionMode.Direct,
-                ConnectionProtocol = Protocol.Tcp,
-            };
-            connectionPolicy.RetryOptions.MaxRetryAttemptsOnThrottledRequests = 5;
-            connectionPolicy.RetryOptions.MaxRetryWaitTimeInSeconds = 60;
-            builder.Services.AddSingleton<IDocumentClient>(new DocumentClient(accountEndpoint, accountKey, connectionPolicy));
+            builder.Services.AddSingleton<IDocumentClient>(provider => {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+
+                var accountEndpoint = new Uri(configuration.GetValue<string>("Cosmos:AccountEndpoint"));
+                var accountKey = configuration.GetValue<string>("Cosmos:AccountKey");
+                var connectionPolicy = new ConnectionPolicy
+                {
+                    ConnectionMode = ConnectionMode.Direct,
+                    ConnectionProtocol = Protocol.Tcp,
+                };
+                connectionPolicy.RetryOptions.MaxRetryAttemptsOnThrottledRequests = 5;
+                connectionPolicy.RetryOptions.MaxRetryWaitTimeInSeconds = 60;
+                return new DocumentClient(accountEndpoint, accountKey, connectionPolicy);
+            });
+
         }
     }
 }

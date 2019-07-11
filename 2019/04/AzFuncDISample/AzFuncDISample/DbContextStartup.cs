@@ -13,12 +13,9 @@ namespace AzFuncDISample
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var configuration = builder.Services
-                .Where(s => s.ServiceType == typeof(IConfiguration)).First()
-                .ImplementationInstance as IConfiguration;
-
-            builder.Services.AddDbContext<SampleContext>(options =>
+            builder.Services.AddDbContext<SampleContext>((provider,options) =>
             {
+                var configuration = provider.GetRequiredService<IConfiguration>();
                 options.UseSqlServer(configuration.GetConnectionString("SampleConnection"));
             });
         }

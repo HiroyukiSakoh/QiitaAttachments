@@ -18,13 +18,10 @@ namespace AzFuncDISample
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var configuration = builder.Services
-                .Where(s => s.ServiceType == typeof(IConfiguration)).First()
-                .ImplementationInstance as IConfiguration;
-
             //HttpClient
-            builder.Services.AddHttpClient("httpstat", httpClient =>
+            builder.Services.AddHttpClient("httpstat", (provider,httpClient) =>
             {
+                var configuration = provider.GetRequiredService<IConfiguration>();
                 var hostName = configuration.GetValue<string>("Test:HostName");
                 httpClient.BaseAddress = new Uri($"https://{hostName}/");
                 httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
@@ -32,8 +29,9 @@ namespace AzFuncDISample
             .ConfigurePrimaryHttpMessageHandler(() => GetHttpMessageHandler());
 
             //HttpClient with Polly
-            builder.Services.AddHttpClient("httpstatWithPolly", httpClient =>
+            builder.Services.AddHttpClient("httpstatWithPolly", (provider, httpClient) =>
             {
+                var configuration = provider.GetRequiredService<IConfiguration>();
                 var hostName = configuration.GetValue<string>("Test:HostName");
                 httpClient.BaseAddress = new Uri($"https://{hostName}/");
                 httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
